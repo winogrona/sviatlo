@@ -86,6 +86,6 @@ update()
 sleep(millis: Number)
 
 /// Get strip size
-```
 size()
+```
 
