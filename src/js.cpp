@@ -16,135 +16,25 @@ using std::string;
 using std::vector;
 
 
-    /*
-    API functions:
+/*
+Effect examples
 
-    /// Debug print
-    print(...)
-
-    /// 24bit uint color from rgb values
-    rgb.make(r: Number, g: Number, b: Number): Number
-
-    /// 24bit uint color from hsv values
-    hsv.make(h: Number, s: Number, v: Number): Number
-
-    /// Get the red value
-    rgb.r(color: Number): Number
-
-    /// Get the green value
-    rgb.g(color: Number): Number
-
-    /// Get the blue value
-    rgb.b(color: Number): Number
-
-    /// Get the HSV hue
-    hsv.h(color: Number): Number
-
-    /// Get the HSV saturation
-    hsv.s(color: Number): Number
-
-    /// Get the HSV value
-    hsv.v(color: Number): Number
-
-    /// Add a slider parameter
-    slider(
-        id: String,
-        display_name: String,
-        description: String,
-        default: Number,
-        min: Number,
-        max: Number,
-        step: Number
-    )
-
-    /// Add a color selector parameter
-    colorwheel(
-        id: String,
-        display_name: String,
-        description: String,
-        default: Number
-    )
-
-    /// Get a parameter at runtime
-    param.<param_name>
-
-    /// Set a pixel value
-    set(index: Number, color: Number)
-
-    /// Update the strip
-    update()
-
-    /// Sleep for N milliseconds
-    sleep(millis: Number)
-
-    /// Get strip size
-    size()
+/// green.elk
 
 
-    Effect examples
+/// solid_color.elk
 
-    /// green.elk
 
-    name = "Green"
-    author = "winogrona"
-    version = 1
-    description = "A test effect"
+/// rainbow.elk
 
-    print("Hello from green.elk!")
-
-    let loop = function() {
-        for (let i = 0; i < LEN; i++) {
-            set(i, 0x00FF00)
-        }
-
-        update()
-        sleep(1000)
-        print("Still alive!")
-    }
-
-    /// solid_color.elk
-
-    name = "Test"
-    author = "winogrona"
-    version = 1
-    description = "A test effect"
-
-    slider("brightness", "Brightness", "Brightness of the color", 0, 1, 0.01)
-    colorwheel("color", "Color", "Color of the effect", 0xff8525)
-
-    let loop = function() {
-        for (let i = 0; i < LEN; i++) {
-            r = rgb.r(param.color) * param.brightness
-            g = rgb.g(param.color) * param.brightness
-            b = rgb.b(param.color) * param.brightness
-
-            set(i, rgb.make(r, g, b))
-        }
-
-        update()
-    }
-
-    /// rainbow.elk
-
-    name = "Rainbow"
-    author = "winogrona"
-    version = 1
-    description = "A test effect"
-
-    for (let i = 0; i < LEN; i++) {
-        h = i / LEN
-        s = 1 / LEN
-        v = 1 / LEN
-    }
-
-    let loop = function() {
-        for (let i = 0; i < LEN; i++) {
-            r = rgb.r(param.color)
-        }
-    }
-    */
+*/
 
 namespace js {
+    using std::vector;
+    using std::string;
+    using color::Color;
+    using color::HSV;
+
     #include <elk.h>
 
     TaskHandle_t jsTask = NULL;
@@ -229,6 +119,83 @@ namespace js {
             return js_mknum((r << 16) | (g << 8) | b);
         }
 
+        jsval_t jsi_rgb_r(struct js *js, jsval_t *args, int nargs) {
+            if (nargs != 1) {
+                return js_mkerr(js, "wrong number of arguments. expected 1: rgb.r(color: Number)");
+            }
+
+            uint32_t color = (uint32_t) js_getnum(args[0]);
+
+            uint8_t r = (color >> 16) & 0xFF;
+            return js_mknum((double) r);
+        }
+
+        jsval_t jsi_rgb_g(struct js *js, jsval_t *args, int nargs) {
+            if (nargs != 1) {
+                return js_mkerr(js, "wrong number of arguments. expected 1: rgb.g(color: Number)");
+            }
+
+            uint32_t color = (uint32_t) js_getnum(args[0]);
+            
+            uint8_t g = (color >> 8) & 0xFF;
+            return js_mknum((double) g);
+        }
+
+        jsval_t jsi_rgb_b(struct js *js, jsval_t *args, int nargs) {
+            if (nargs != 1) {
+                return js_mkerr(js, "wrong number of arguments. expected 1: rgb.b(color: Number)");
+            }
+
+            uint32_t color = (uint32_t) js_getnum(args[0]);
+            
+            uint8_t b = (color) & 0xFF;
+            return js_mknum((double) b);
+        }
+
+        jsval_t jsi_hsv_make(struct js *js, jsval_t *args, int nargs) {
+            if (nargs != 3) {
+                return js_mkerr(js, "wrong number of arguments. expected 3: hsv.make(h: Number, s: Number, v: Number)");
+            }
+
+            double h = js_getnum(args[0]);
+            double s = js_getnum(args[1]);
+            double v = js_getnum(args[2]);
+
+            color::Color color = color::Color(color::HSV{h, s, v});
+
+            return js_mknum((double) color.to_uint32());
+        }
+
+         jsval_t jsi_hsv_h(struct js *js, jsval_t *args, int nargs) {
+            if (nargs != 1) {
+                return js_mkerr(js, "wrong number of arguments. expected 1: hsv.h(color: Number)");
+            }
+
+            color::Color color = (uint32_t) js_getnum(args[0]);
+
+            return js_mknum((double) color.to_hsv().h);
+        }
+
+        jsval_t jsi_hsv_s(struct js *js, jsval_t *args, int nargs) {
+            if (nargs != 1) {
+                return js_mkerr(js, "wrong number of arguments. expected 1: hsv.s(color: Number)");
+            }
+
+            color::Color color = (uint32_t) js_getnum(args[0]);
+
+            return js_mknum((double) color.to_hsv().s);
+        }
+
+        jsval_t jsi_hsv_v(struct js *js, jsval_t *args, int nargs) {
+            if (nargs != 1) {
+                return js_mkerr(js, "wrong number of arguments. expected 1: hsv.v(color: Number)");
+            }
+
+            color::Color color = (uint32_t) js_getnum(args[0]);
+
+            return js_mknum((double) color.to_hsv().v);
+        }
+
         jsval_t jsi_sleep(struct js *js, jsval_t *args, int nargs) {
             if (nargs != 1) {
                 return js_mkerr(js, "wrong number of arguments. expected 1: sleep(millis: Number)");
@@ -241,7 +208,7 @@ namespace js {
 
         jsval_t jsi_set(struct js *js, jsval_t *args, int nargs) {
             if (nargs != 2) {
-                return js_mkerr(js, "wrong number of arguments. expected 2: set(pixel: Number, color: Number)");
+                return js_mkerr(js, "wrong number of arguments. expected 2: set(index: Number, color: Number)");
             }
 
             size_t i = (size_t) js_getnum(args[0]);
@@ -255,6 +222,20 @@ namespace js {
             return js_mknull();
         }
 
+        jsval_t jsi_get(struct js *js, jsval_t *args, int nargs) {
+            if (nargs != 1) {
+                return js_mkerr(js, "wrong number of arguments. expected 1: get(index: Number)");
+            }
+
+            size_t i = (size_t) js_getnum(args[0]);
+
+            if (i >= strip::len) {
+                return js_mkerr(js, "index out of bounds");
+            }
+
+            return js_mknum((double) strip::leds[i].to_uint32());
+        }
+
         jsval_t jsi_update(struct js *js, jsval_t *args, int nargs) {
             if (nargs != 0) {
                 return js_mkerr(js, "wrong number of arguments. expected 0: update()");
@@ -263,6 +244,14 @@ namespace js {
             strip::show();
 
             return js_mknull();
+        }
+
+        jsval_t jsi_millis(struct js *js, jsval_t *args, int nargs) {
+            if (nargs != 0) {
+                return js_mkerr(js, "wrong number of arguments. expected 0: millis()");
+            }
+
+            return js_mknum((double) millis());
         }
     }}
 
@@ -285,10 +274,21 @@ namespace js {
         js_set(js, js_glob(js), "set", js_mkfun(js_interface::jsi_set));
         js_set(js, js_glob(js), "sleep", js_mkfun(js_interface::jsi_sleep));
         js_set(js, js_glob(js), "update", js_mkfun(js_interface::jsi_update));
+        js_set(js, js_glob(js), "millis", js_mkfun(js_interface::jsi_millis));
 
         jsval_t rgb = js_mkobj(js);
         js_set(js, rgb, "make", js_mkfun(js_interface::jsi_rgb_make));
+        js_set(js, rgb, "r", js_mkfun(js_interface::jsi_rgb_r));
+        js_set(js, rgb, "g", js_mkfun(js_interface::jsi_rgb_g));
+        js_set(js, rgb, "b", js_mkfun(js_interface::jsi_rgb_b));
         js_set(js, js_glob(js), "rgb", rgb);
+
+        jsval_t hsv = js_mkobj(js);
+        js_set(js, rgb, "make", js_mkfun(js_interface::jsi_hsv_make));
+        js_set(js, rgb, "h", js_mkfun(js_interface::jsi_hsv_h));
+        js_set(js, rgb, "s", js_mkfun(js_interface::jsi_hsv_s));
+        js_set(js, rgb, "v", js_mkfun(js_interface::jsi_hsv_v));
+        js_set(js, js_glob(js), "hsv", rgb);
 
         js_set(js, js_glob(js), "name", js_mkstr(js, VALUE_PLACEHOLDER, sizeof(VALUE_PLACEHOLDER) - 1));
         js_set(js, js_glob(js), "author", js_mkstr(js, VALUE_PLACEHOLDER, sizeof(VALUE_PLACEHOLDER) - 1));
@@ -333,7 +333,6 @@ namespace js {
         effect_running = true;
 
         while (true) {
-            printf("[js.effect_task] executing the loop function\n");
             v = js_eval(js, LOOP_FUNCTION_CALL, sizeof(LOOP_FUNCTION_CALL) - 1);
 
             if (js_type(v) == JS_ERR) {

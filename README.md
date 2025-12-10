@@ -79,6 +79,9 @@ param.<param_name>
 /// Set a pixel value
 set(index: Number, color: Number)
 
+/// Get a pixel value
+get(index: Number): Number
+
 /// Update the strip
 update()
 
@@ -87,5 +90,8 @@ sleep(millis: Number)
 
 /// Get strip size
 size()
+
+/// Time since system startup in milliseconds
+millis()
 ```
 

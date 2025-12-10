@@ -46,22 +46,49 @@ void setup() {
     js::setup_js();
     printf("[main] js is up.\n");
 
-    string script = R"(/// green.elk
-    name = "Green";
-    author = "winogrona";
-    version = 1;
-    description = "A test effect";
+    string script = R"(
+name = "Rainbow";
+author = "winogrona";
+version = 1;
+description = "A rainbow effect";
 
-    print("Hello from green.elk!");
+let h;
+let s = 1;
+let v = 1;
 
-    let loop = function() {
-        for (let i = 0; i < LEN; i++) {
-          set(i, rgb.make(0, 255, 0));
-        }
-        update();
-        print("Still alive!");
-        sleep(1000);
-    };
+for (let i = 0; i < LEN; i++) {
+  h = i / LEN;
+  set(i, hsv.make(h, s, v));
+  print("LED ", i, ": H=", h, " S=", s, " V=", v);
+  print(" Color: ", rgb.r(get(i)), ",", rgb.g(get(i)), ",", rgb.b(get(i)));
+}
+
+update();
+
+let last_time = millis();
+let cycle_ms = 10000;
+
+let loop = function() {
+  let elapsed = millis() - last_time;
+
+  if (elapsed > cycle_ms) {
+    last_time = millis();
+    return;
+  }
+
+  for (let i = 0; i < LEN; i++) {
+    color = get(i)
+    h = hsv.h() + (elapsed / cycle_ms);
+
+    if (h > 1) {
+      h = h - 1;
+    }
+
+    set(i, hsv.make(h, s, v));
+  }
+
+  update();
+}
 )";
 
     printf("[main] js test: atteming to execute: '%s'.\n", script.c_str());

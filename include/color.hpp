@@ -12,49 +12,44 @@ namespace color {
 
     inline constexpr const char * ESCAPE_SEQ_RESET = "\x1b[0m";
 
+    struct Color;
+
+    struct HSV {
+        double h; // 0.0 - 1.0
+        double s; // 0.0 - 1.0
+        double v; // 0.0 - 1.0
+
+        inline constexpr HSV() : h(0), s(0), v(0) {};
+        inline constexpr HSV(double h, double s, double v) : h(h), s(s), v(v) {};
+        HSV(Color rgb);
+        Color to_rgb();
+    };
+
     struct Color {
         uint8_t r;
         uint8_t g;
         uint8_t b;
 
-        Color() {
-            r = 0;
-            g = 0;
-            b = 0;
-        }
+        inline constexpr Color() : r(0), g(0), b(0) {};
 
-        Color(uint8_t r, uint8_t g, uint8_t b) {
-            this->r = r;
-            this->g = g;
-            this->b = b;
-        }
+        Color(HSV hsv);
+        Color(uint8_t r, uint8_t g, uint8_t b);
+        Color(uint32_t color);
+        string to_hex();
+        string to_escape_seq_foreground();
+        string to_escape_seq_background();
+        HSV to_hsv();
 
-        Color(uint32_t color) {
-            r = (color >> 16) & 0xFF;
-            g = (color >> 8) & 0xFF;
-            b = color & 0xFF;
-        }
-
-        string to_hex() {
-            char hex[] = "000000";
-            sprintf(hex, "%02x%02x%02x", r, g, b);
-            return string(hex);
-        }
-
-        string to_escape_seq_foreground() {
-            char code[] = "\x1b[38;2;255;255;255m";
-            sprintf(code, "\x1b[38;2;%d;%d;%dm", r, g, b);
-            return string(code);
-        }
-
-        string to_escape_seq_background() {
-            char code[] = "\x1b[48;2;255;255;255m";
-            sprintf(code, "\x1b[48;2;%d;%d;%dm", r, g, b);
-            return string(code);
-        }
-
-        operator CRGB() {
+        inline operator CRGB() {
             return CRGB(r, g, b);
+        }
+
+        inline constexpr uint32_t to_uint32() {
+            return ((uint32_t)r << 16) | ((uint32_t)g << 8) | (uint32_t)b;
+        }
+
+        inline constexpr operator uint32_t() {
+            return to_uint32();
         }
     };
 }
